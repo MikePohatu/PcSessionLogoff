@@ -1,4 +1,20 @@
 ﻿
+function quserIdleToTimeSpan {
+    param(
+        [string]$line
+    )
+
+    if($line -like "*:*"){
+        $retval = [timespan]"$line"
+    }elseif($line -eq "." -or $line -eq "none"){
+        $retval = [timespan]"0:0"
+    }else{
+        $retval = [timespan]"0:$line"
+    }
+    return $retval
+}
+
+
 Function Get-LoggedOnUser
 {
     <#
@@ -40,7 +56,7 @@ Function Get-LoggedOnUser
         [string[]]$ComputerName = 'localhost'
     )
     begin {
-        $ErrorActionPreference = 'Stop'
+        #$ErrorActionPreference = 'Stop'
     }
 
     process {
@@ -60,7 +76,7 @@ Function Get-LoggedOnUser
                             $HashProps.SessionName = $null
                             $HashProps.Id = $CurrentLine[1]
                             $HashProps.State = $CurrentLine[2]
-                            $HashProps.IdleTime = [timespan]$CurrentLine[3]
+                            $HashProps.IdleTime = quserIdleToTimeSpan -line $CurrentLine[3]
                             #$HashProps.LogonTime = $CurrentLine[4..6] -join ' '
                             $HashProps.LogonTime = $CurrentLine[4..($CurrentLine.GetUpperBound(0))] -join ' '
                     } 
@@ -68,7 +84,7 @@ Function Get-LoggedOnUser
                             $HashProps.SessionName = $CurrentLine[1]
                             $HashProps.Id = $CurrentLine[2]
                             $HashProps.State = $CurrentLine[3]
-                            $HashProps.IdleTime = [timespan]$CurrentLine[4]
+                            $HashProps.IdleTime = quserIdleToTimeSpan -line $CurrentLine[4]
                             $HashProps.LogonTime = $CurrentLine[5..($CurrentLine.GetUpperBound(0))] -join ' '
                     }
 
@@ -105,8 +121,8 @@ Function Get-IdleUsers
 
     process {
         Get-LoggedOnUser | ForEach-Object {
-            write-host "IdleTime: " + $_.IdleTime
-            write-host "Specified time: $IdleTime"
+            #write-host "IdleTime: " + $_.IdleTime
+            #write-host "Specified time: $IdleTime"
             if (($_.State -eq "Disc") -AND ($_.IdleTime -gt $IdleTime))
             {
                 $idleusers.Add($_) |Out-null
@@ -143,4 +159,4 @@ function LogoffComputerSessionId {
     }
 }
 
-New-TimeSpan -minutes 16 | Get-IdleUsers  | ForEach-Object { LogoffComputerSessionId -Id $_.Id -ComputerName $_.ComputerName }
+New-TimeSpan -minutes 15 | Get-IdleUsers  | ForEach-Object { LogoffComputerSessionId -Id $_.Id -ComputerName $_.ComputerName }
