@@ -44,7 +44,7 @@ Function Get-LoggedOnUser
     }
 
     process {
-        [System.Collections.ArrayList]$sessions = New-Object System.Collections.ArrayList($null)
+        [System.Collections.ArrayList]$sessions = New-Object System.Collections.ArrayList
 
         foreach ($Computer in $ComputerName) {
             try {
@@ -84,7 +84,7 @@ Function Get-LoggedOnUser
             }
         }
 
-        $sessions
+        return $sessions
     }
 }
 
@@ -94,7 +94,7 @@ Function Get-IdleUsers
     Param ([int]$idleminutes=1440)
 
     begin {
-        [System.Collections.ArrayList]$idleusers = New-Object System.Collections.ArrayList($null)
+        [System.Collections.ArrayList]$idleusers = New-Object System.Collections.ArrayList
     }
 
     process {
@@ -104,14 +104,14 @@ Function Get-IdleUsers
                 $idleusers.Add($_)
             }
         }
-        $idleusers
+        return $idleusers
     }
 }
 
 
 Function Get-ActiveUsers
 {
-    [System.Collections.ArrayList]$activeusers = New-Object System.Collections.ArrayList($null)
+    [System.Collections.ArrayList]$activeusers = New-Object System.Collections.ArrayList
 
     Get-LoggedOnUser | ForEach-Object {
         if ($_.State -eq "Active")
@@ -119,7 +119,8 @@ Function Get-ActiveUsers
             $activeusers.Add($_)
         }  
     }
-    $activeusers
+
+    return $activeusers
 }
 
 
@@ -140,4 +141,5 @@ function LogoffComputerSessionId {
     }
 }
 
-Get-IdleUsers
+
+Get-ActiveUsers
