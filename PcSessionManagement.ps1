@@ -60,7 +60,7 @@ Function Get-LoggedOnUser
                             $HashProps.SessionName = $null
                             $HashProps.Id = $CurrentLine[1]
                             $HashProps.State = $CurrentLine[2]
-                            $HashProps.IdleTime = [int]$CurrentLine[3]
+                            $HashProps.IdleTime = [timespan]$CurrentLine[3]
                             #$HashProps.LogonTime = $CurrentLine[4..6] -join ' '
                             $HashProps.LogonTime = $CurrentLine[4..($CurrentLine.GetUpperBound(0))] -join ' '
                     } 
@@ -68,7 +68,7 @@ Function Get-LoggedOnUser
                             $HashProps.SessionName = $CurrentLine[1]
                             $HashProps.Id = $CurrentLine[2]
                             $HashProps.State = $CurrentLine[3]
-                            $HashProps.IdleTime = [int]$CurrentLine[4]
+                            $HashProps.IdleTime = [timespan]$CurrentLine[4]
                             $HashProps.LogonTime = $CurrentLine[5..($CurrentLine.GetUpperBound(0))] -join ' '
                     }
 
@@ -92,7 +92,12 @@ Function Get-LoggedOnUser
 
 Function Get-IdleUsers
 {
-    Param ([int]$idleminutes=1440)
+    Param (
+    [CmdletBinding()] 
+    [Parameter(ValueFromPipeline=$true,
+        ValueFromPipelineByPropertyName=$true)]
+    [timespan]$IdleTime=1440
+    )
 
     begin {
         [System.Collections.ArrayList]$idleusers = New-Object System.Collections.ArrayList
@@ -100,7 +105,9 @@ Function Get-IdleUsers
 
     process {
         Get-LoggedOnUser | ForEach-Object {
-            if (($_.State -eq "Disc") -AND ($_.IdleTime -gt $idleminutes))
+            write-host "IdleTime: " + $_.IdleTime
+            write-host "Specified time: $IdleTime"
+            if (($_.State -eq "Disc") -AND ($_.IdleTime -gt $IdleTime))
             {
                 $idleusers.Add($_) |Out-null
             }
@@ -126,13 +133,7 @@ Function Get-ActiveUsers
 
 function LogoffComputerSessionId {
     param(
-        [CmdletBinding()] 
-        [Parameter(ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true)]
         [string[]]$Id,
-        [CmdletBinding()] 
-        [Parameter(ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true)]
         [string[]]$ComputerName
     )
 
@@ -142,4 +143,4 @@ function LogoffComputerSessionId {
     }
 }
 
-Get-IdleUsers -idleminutes 5 | LogoffComputerSessionId
+New-TimeSpan -minutes 16 | Get-IdleUsers  | ForEach-Object { LogoffComputerSessionId -Id $_.Id -ComputerName $_.ComputerName }
