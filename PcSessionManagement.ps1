@@ -123,7 +123,7 @@ Function Get-ActiveUsers
 }
 
 
-function LogoffSessionId {
+function LogoffComputerSessionId {
     param(
         [CmdletBinding()] 
         [Parameter(ValueFromPipeline=$true,
