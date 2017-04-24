@@ -60,30 +60,31 @@ Function Get-LoggedOnUser
                             $HashProps.SessionName = $null
                             $HashProps.Id = $CurrentLine[1]
                             $HashProps.State = $CurrentLine[2]
-                            $HashProps.IdleTime = $CurrentLine[3]
-                            $HashProps.LogonTime = $CurrentLine[4..6] -join ' '
+                            $HashProps.IdleTime = [int]$CurrentLine[3]
+                            #$HashProps.LogonTime = $CurrentLine[4..6] -join ' '
                             $HashProps.LogonTime = $CurrentLine[4..($CurrentLine.GetUpperBound(0))] -join ' '
-                    } else {
+                    } 
+                    else {
                             $HashProps.SessionName = $CurrentLine[1]
                             $HashProps.Id = $CurrentLine[2]
                             $HashProps.State = $CurrentLine[3]
-                            $HashProps.IdleTime = $CurrentLine[4]
+                            $HashProps.IdleTime = [int]$CurrentLine[4]
                             $HashProps.LogonTime = $CurrentLine[5..($CurrentLine.GetUpperBound(0))] -join ' '
                     }
 
                     $session = New-Object -TypeName PSCustomObject -Property $HashProps |
                         Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
-                    $sessions.Add($session)
+                    $sessions.Add($session) |Out-null
                 } 
-            } catch {
+            } 
+            catch {
                 $session = New-Object -TypeName PSCustomObject -Property @{
                     ComputerName = $Computer
                     Error = $_.Exception.Message
                 } | Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
-                $sessions.Add($session)
+                $sessions.Add($session) |Out-null
             }
         }
-
         return $sessions
     }
 }
@@ -99,9 +100,9 @@ Function Get-IdleUsers
 
     process {
         Get-LoggedOnUser | ForEach-Object {
-            if (($_.IdleTime -gt $idleminutes) -AND ($_.State -ne "Active"))
+            if (($_.State -eq "Disc") -AND ($_.IdleTime -gt $idleminutes))
             {
-                $idleusers.Add($_)
+                $idleusers.Add($_) |Out-null
             }
         }
         return $idleusers
@@ -116,10 +117,9 @@ Function Get-ActiveUsers
     Get-LoggedOnUser | ForEach-Object {
         if ($_.State -eq "Active")
         {
-            $activeusers.Add($_)
+            $activeusers.Add($_) |Out-null
         }  
     }
-
     return $activeusers
 }
 
@@ -137,9 +137,9 @@ function LogoffComputerSessionId {
     )
 
     process {
-        logoff $Id /server:$ComputerName
+        #logoff $Id /server:$ComputerName
+        write-host "logoff $Id /server:$ComputerName"
     }
 }
 
-
-Get-ActiveUsers
+Get-IdleUsers -idleminutes 5 | LogoffComputerSessionId
