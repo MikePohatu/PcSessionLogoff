@@ -99,7 +99,7 @@ Function Get-IdleUsers
 
     process {
         Get-LoggedOnUser | ForEach-Object {
-            if (($_.IdleTime > $idleminutes) -AND ($_.State -ne "Active"))
+            if (($_.IdleTime -gt $idleminutes) -AND ($_.State -ne "Active"))
             {
                 $idleusers.Add($_)
                 #write-host $_
