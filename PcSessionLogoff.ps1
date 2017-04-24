@@ -1,37 +1,38 @@
-﻿<#
-.Synopsis
-Queries a computer to check for interactive sessions
-
-.DESCRIPTION
-This script takes the output from the quser program and parses this to PowerShell objects
-
-.NOTES   
-Name: Get-LoggedOnUser
-Author: Jaap Brasser
-Version: 1.2.1
-DateUpdated: 2015-09-23
-
-.LINK
-http://www.jaapbrasser.com
-
-.PARAMETER ComputerName
-The string or array of string for which a query will be executed
-
-.EXAMPLE
-.\Get-LoggedOnUser.ps1 -ComputerName server01,server02
-
-Description:
-Will display the session information on server01 and server02
-
-.EXAMPLE
-'server01','server02' | .\Get-LoggedOnUser.ps1
-
-Description:
-Will display the session information on server01 and server02
-#>
-
+﻿
 Function Get-LoggedOnUser
 {
+    <#
+    .Synopsis
+    Queries a computer to check for interactive sessions
+
+    .DESCRIPTION
+    This script takes the output from the quser program and parses this to PowerShell objects
+
+    .NOTES   
+    Name: Get-LoggedOnUser
+    Author: Jaap Brasser
+    Version: 1.2.1
+    DateUpdated: 2015-09-23
+
+    .LINK
+    http://www.jaapbrasser.com
+
+    .PARAMETER ComputerName
+    The string or array of string for which a query will be executed
+
+    .EXAMPLE
+    .\Get-LoggedOnUser.ps1 -ComputerName server01,server02
+
+    Description:
+    Will display the session information on server01 and server02
+
+    .EXAMPLE
+    'server01','server02' | .\Get-LoggedOnUser.ps1
+
+    Description:
+    Will display the session information on server01 and server02
+    #>
+
     param(
         [CmdletBinding()] 
         [Parameter(ValueFromPipeline=$true,
@@ -61,12 +62,14 @@ Function Get-LoggedOnUser
                             $HashProps.State = $CurrentLine[2]
                             $HashProps.IdleTime = $CurrentLine[3]
                             $HashProps.LogonTime = $CurrentLine[4..6] -join ' '
-                            $HashProps.LogonTime = $CurrentLine[4..($CurrentLine.GetUpperBound(0))] -join ' '                    } else {
+                            $HashProps.LogonTime = $CurrentLine[4..($CurrentLine.GetUpperBound(0))] -join ' '
+                    } else {
                             $HashProps.SessionName = $CurrentLine[1]
                             $HashProps.Id = $CurrentLine[2]
                             $HashProps.State = $CurrentLine[3]
                             $HashProps.IdleTime = $CurrentLine[4]
-                            $HashProps.LogonTime = $CurrentLine[5..($CurrentLine.GetUpperBound(0))] -join ' '                    }
+                            $HashProps.LogonTime = $CurrentLine[5..($CurrentLine.GetUpperBound(0))] -join ' '
+                    }
 
                     $session = New-Object -TypeName PSCustomObject -Property $HashProps |
                         Select-Object -Property UserName,ComputerName,SessionName,Id,State,IdleTime,LogonTime,Error
@@ -90,7 +93,9 @@ Function Get-IdleUsers
 {
     Param ([int]$idleminutes=1440)
 
-    [System.Collections.ArrayList]$idleusers = New-Object System.Collections.ArrayList($null)
+    begin {
+        [System.Collections.ArrayList]$idleusers = New-Object System.Collections.ArrayList($null)
+    }
 
     process {
         Get-LoggedOnUser | ForEach-Object {
