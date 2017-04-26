@@ -43,7 +43,7 @@ Function Get-LoggedOnUser
     Will display the session information on server01 and server02
 
     .EXAMPLE
-    'server01','server02' | .\Get-LoggedOnUser.ps1
+    'server01','server02' | Get-LoggedOnUser
 
     Description:
     Will display the session information on server01 and server02
@@ -112,7 +112,7 @@ Function Get-IdleUsers
     [CmdletBinding()] 
     [Parameter(ValueFromPipeline=$true,
         ValueFromPipelineByPropertyName=$true)]
-    [timespan]$IdleTime=1440
+    [timespan]$IdleTime=0
     )
 
     begin {
@@ -159,4 +159,4 @@ function LogoffComputerSessionId {
     }
 }
 
-New-TimeSpan -minutes 15 | Get-IdleUsers  | ForEach-Object { LogoffComputerSessionId -Id $_.Id -ComputerName $_.ComputerName }
+
