@@ -1,15 +1,16 @@
-﻿
-function quserIdleToTimeSpan {
+﻿Function quserIdleToTimeSpan {
     param(
         [string]$line
     )
 
-    if($line -like "*:*"){
-        $retval = [timespan]"$line"
-    }elseif($line -eq "." -or $line -eq "none"){
+    $newline = $line.Replace("+",":")
+
+    if($newline -like "*:*"){
+        $retval = [timespan]"$newline"
+    }elseif($newline -eq "." -or $newline -eq "none"){
         $retval = [timespan]"0:0"
     }else{
-        $retval = [timespan]"0:$line"
+        $retval = [timespan]"0:$newline"
     }
     return $retval
 }
